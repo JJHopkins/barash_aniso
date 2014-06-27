@@ -8,10 +8,8 @@ from pylab import show
 
 eiz1x = np.loadtxt('data/eiz_x_51.txt') # LDS in perpendicular direction
 eiz1z = np.loadtxt('data/eiz_z_51.txt') # LDS in parallel direction
-
 eiz2x = np.loadtxt('data/eiz_x_290.txt') # LDS in perpendicular direction
 eiz2z = np.loadtxt('data/eiz_z_290.txt') # LDS in parallel direction
-
 eiz_w = np.loadtxt('data/eiz_w.txt') # LDS of water, intervening medium
 
 # Constants
@@ -24,8 +22,6 @@ Temp = 300.              # [K]
 kbT = Temp * 1.3807e-23 # [J]
 
 # Matsubara frequencies
-#ns = z/(0.159)#
-
 ns = np.arange(0.,500.) 
 zs = ns * coeff         
 Ls = np.arange(1e-9,100e-9,1e-9)  # separation distance between 2 cyclinders
@@ -34,9 +30,6 @@ thetas = np.arange(np.pi/12, np.pi/2,0.01)
 #Integration vars
 r = np.linspace(0.,2.**17, 1.+2.**17)
 phi =  np.linspace(0.,2.*np.pi, 1.+2.**17)
-
-#T  = np.linspace(0.,2.**17, 1.+2.**17)
-#U  = np.linspace(0.,2.**17, 1.+2.**17)
 
 def rho1(Z,Eiz1z):
     return np.sqrt(r*r + Z*Z*Eiz1z/(c*c))
@@ -107,63 +100,39 @@ def E(Rho1,Rho2,Rho3,Rhotil1,Eiz1x,exponential):
 #rho21 = rho1 - rho2
 #rho32 = rho2 - rho3
 
-p = np.zeros(shape = (len(Ls),len(ns)))
-A0 = np.zeros(shape = (len(Ls),len(ns)))
-A2 = np.zeros(shape = (len(Ls),len(ns)))
-A2_org = np.zeros(shape = (len(Ls),len(ns)))
-A2_new = np.zeros(shape = (len(Ls),len(ns)))
-G = np.zeros(len(Ls))
-G_new = np.zeros(len(Ls))
-
-a_1 =   Aiz(eiz_x_051,eiz_z_051,eiz_w)
-a_2 =   Aiz(eiz_x_290,eiz_z_290,eiz_w)
-delta_1 = Delta(eiz_z_051,eiz_w)
-delta_2 = Delta(eiz_z_290,eiz_w)
-delta_prp1 = Delta_perp(eiz_x_051,eiz_w)
-delta_prp2 = Delta_perp(eiz_x_290,eiz_w)
-D   = delta_prp2*delta_1*(delta_1 - 2.*delta_prp1)*(delta_2-2.*delta_prp2)
-DD  = DDDg2(eiz_x_051,eiz_x_290,eiz_z_051,eiz_z_290,eiz_w)
-DDD = DDDg2(eiz_x_051,eiz_x_290,eiz_z_051,eiz_z_290,eiz_w)
-
-## Integrand, A0(n=0) and A2(n=0) terms 
-#f0_term0 = U*U*U * np.exp(-2.* U)\
-#        *2.*(1.+3.*a_1[0])*(1.+3.*a_2[0])
-#        #*((eiz_z[0]-eiz_w[0])/(eiz_z[0]-eiz_w[0]))\
-#f2_term0 =  U*U*U * np.exp(-2.* U)\
-#        *(1.-a_1[0])*(1.-a_2[0])
-#        #*((eiz_z[0]-eiz_w[0])/(eiz_z[0]-eiz_w[0]))\
-#Ft0_term0 = romb(f0_term0)
-##Ft0_term0 = np.sum(f0_term0)
-#Ft2_term0 = romb(f2_term0)
-##Ft2_term0 = np.sum(f2_term0)
-
+D    = np.zeros(shape = (len(Ls),len(ns),len(thetas)))
+Ilnd = np.zeros(shape = (len(Ls),len(ns),len(thetas)))
+Ig   = np.zeros(shape = (len(Ls),len(ns),len(thetas)))
+G    = np.zeros(shape = (len(Ls),len(thetas)))
 # Calculate 1 \geq n \leq 500 terms
 for i,L in enumerate(Ls):
     print 'Computing A for separation number %3.0f of %3.0f'%(i, len(Ls))
     for j,n in enumerate(ns):
         for k,theta in enumerate(thetas):
-
-       D = 
-       (1./gamma(rho1[zs[j],eiz1x[j]],rho2[zs[j],eiz1x[j]],rho3[zs[j],eiz1x[j]],rhotilda1[zs[j],eiz1x[j],eiz1z[j]],rhotilda2[zs[j],eiz2x,eiz2z,thetas],eiz1x[j],eiz2x[j],eiz3[j],thetas[k]))
-       *(
-            A(rho1[zs[j],eiz1x[j]],rho2[zs[j],eiz1x[j]],rho3[zs[j],eiz1x[j]],rhotilda2[zs[j],eiz1x[j],eiz1z[j]],rhotilda2[zs[j],eiz2x,eiz2z,thetas],eiz1x[j],eiz2x[j],eiz3[j],exponential(rho3[zs[j],eiz1x[j]],Ls[i]))
-            
-            - eiz2x*(rhotilda2-rho2)/(rho2*rho2-r*np.sin(phi+theta)*r*np.sin(phi+theta))
-            
+            D[i,j,k] = 
+            (1./gamma(rho1[zs[j],eiz1x[j]],rho2[zs[j],eiz2x[j]],rho3[zs[j],eiz3x[j]],rhotilda1[zs[j],eiz1x[j],eiz1z[j]],rhotilda2[zs[j],eiz2x,eiz2z,thetas[k]],eiz1x[j],eiz2x[j],eiz3[j],thetas[k]))
             *(
-            B(rho1[zs[j],eiz1x[j]],rho2[zs[j],eiz1x[j]],rho3[zs[j],eiz1x[j]],rhotilda1[zs[j],eiz1x[j],eiz1z[j]],rhotilda2[zs[j],eiz2x,eiz2z,thetas],eiz1x[j],eiz2x[j],eiz3[j],exponential(rho3[zs[j],eiz1x[j]],Ls[i]))
-                
-            *r*np.sin(phi+theta)*r*np.sin(phi+theta)
+                 A(rho1[zs[j],eiz1x[j]],rho2[zs[j],eiz2x[j]],rho3[zs[j],eiz3x[j]],rhotilda1[zs[j],eiz1x[j],eiz1z[j]],rhotilda2[zs[j],eiz2x[j],eiz2z[j],thetas[k]],eiz1x[j],eiz2x[j],eiz3[j],exponential(rho3[zs[j],eiz3x[j]],Ls[i]))
+                 
+                 - eiz2x[j]*(rhotilda2[zs[j],eiz2x[j],eiz2z[j],thetas[k]]-rho2[zs[j],eiz2x[j]])/(rho2[zs[j],eiz2x[j]]*rho2[zs[j],eiz2x[j]]-r*np.sin(phis+thetas[k])*r*np.sin(phis+thetas[k]))
+                 
+                 *(
+                 B(rho1[zs[j],eiz1x[j]],rho2[zs[j],eiz2x[j]],rho3[zs[j],eiz3x[j]],rhotilda1[zs[j],eiz1x[j],eiz1z[j]],rhotilda2[zs[j],eiz2x,eiz2z,thetas[k]],eiz1x[j],eiz2x[j],eiz3[j],exponential(rho3[zs[j],eiz1x[j]],Ls[i]))
+                     
+                 *r*np.sin(phis+thetas[k])*r*np.sin(phis+thetas[k])
+                 
+                     -E(rho1[zs[j],eiz1x[j]],rho2[zs[j],eiz2x[j]],rho3[zs[j],eiz3x[j]],rhotilda1[zs[j],eiz1x[j],eiz1z[j]],eiz1x[j],exponential(rho3[zs[j],eiz3x[j]],Ls[i]))
+                     
+                     *(
+                         2.*r*r*np.sin(phis)*np.cos(thetas[k])*np.sin(phis+thetas[k])+rho3rho3*np.sin(thetas[k])*[zs[j],eiz3x[j]]*np.sin(thetas[k])   
+                     )
+                     +C(rho1[zs[j],eiz1x[j]],rho2[zs[j],eiz2x[j]],rho3[zs[j],eiz3x[j]],rhotilda1[zs[j],eiz1x[j],eiz1z[j]],rhotilda2[zs[j],eiz2x[j],eiz2z[j],thetas[k]],eiz1x[j],eiz2x[j],eiz3[j],exponential(rho3[zs[j],eiz3x[j]],Ls[i]))
+                 )
+             ) 
             
-                -E(rho1[zs[j],eiz1x[j]],rho2[zs[j],eiz1x[j]],rho3[zs[j],eiz1x[j]],rhotilda1[zs[j],eiz1x[j],eiz1z[j]],eiz1x[j],exponential(rho3[zs[j],eiz1x[j]],Ls[i]))
-                
-                *(
-                    2.*r*r*np.sin(phi)*np.cos(theta)*np.sin(phi+theta)+rho3*np.sin(theta)*rho3*np.sin(theta)   
-                )
-                +C(rho1[zs[j],eiz1x[j]],rho2[zs[j],eiz1x[j]],rho3[zs[j],eiz1x[j]],rhotilda1[zs[j],eiz1x[j],eiz1z[j]],rhotilda2[zs[j],eiz2x,eiz2z,thetas],eiz1x[j],eiz2x[j],eiz3[j],exponential(rho3[zs[j],eiz1x[j]],Ls[i]))
-            )
-        ) 
-        
+            Ilnd[i,j,k] = romb(np.log*D[i,j,k]) #integral over phis vector
+            Ig[i,j,k] = romb(r*np.log(Ilnd[i,j,k])) #integral over r
+            G[i,k] = kbT/(4.*np.pi*np.pi)*np.sum(Ig[i,j,k]) # sum over n
         
         
         p[i,j] = Pn(eiz_w[j],zs[j],L)
@@ -649,3 +618,36 @@ pl.show()
 #            ((par2-med)/med -2.*(perp2-med)/(perp2+med))
 #def Pn(e,zn,l):
 #	return np.sqrt(e)*zn*l*(1./c)
+#p = np.zeros(shape = (len(Ls),len(ns)))
+#A0 = np.zeros(shape = (len(Ls),len(ns)))
+#A2 = np.zeros(shape = (len(Ls),len(ns)))
+#A2_org = np.zeros(shape = (len(Ls),len(ns)))
+#A2_new = np.zeros(shape = (len(Ls),len(ns)))
+#G = np.zeros(len(Ls))
+#G_new = np.zeros(len(Ls))
+#
+#a_1 =   Aiz(eiz_x_051,eiz_z_051,eiz_w)
+#a_2 =   Aiz(eiz_x_290,eiz_z_290,eiz_w)
+#delta_1 = Delta(eiz_z_051,eiz_w)
+#delta_2 = Delta(eiz_z_290,eiz_w)
+#delta_prp1 = Delta_perp(eiz_x_051,eiz_w)
+#delta_prp2 = Delta_perp(eiz_x_290,eiz_w)
+#D   = delta_prp2*delta_1*(delta_1 - 2.*delta_prp1)*(delta_2-2.*delta_prp2)
+#DD  = DDDg2(eiz_x_051,eiz_x_290,eiz_z_051,eiz_z_290,eiz_w)
+#DDD = DDDg2(eiz_x_051,eiz_x_290,eiz_z_051,eiz_z_290,eiz_w)
+
+## Integrand, A0(n=0) and A2(n=0) terms 
+#f0_term0 = U*U*U * np.exp(-2.* U)\
+#        *2.*(1.+3.*a_1[0])*(1.+3.*a_2[0])
+#        #*((eiz_z[0]-eiz_w[0])/(eiz_z[0]-eiz_w[0]))\
+#f2_term0 =  U*U*U * np.exp(-2.* U)\
+#        *(1.-a_1[0])*(1.-a_2[0])
+#        #*((eiz_z[0]-eiz_w[0])/(eiz_z[0]-eiz_w[0]))\
+#Ft0_term0 = romb(f0_term0)
+##Ft0_term0 = np.sum(f0_term0)
+#Ft2_term0 = romb(f2_term0)
+##Ft2_term0 = np.sum(f2_term0)
+
+#T  = np.linspace(0.,2.**17, 1.+2.**17)
+#U  = np.linspace(0.,2.**17, 1.+2.**17)
+
